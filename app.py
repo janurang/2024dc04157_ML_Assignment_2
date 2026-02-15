@@ -1,51 +1,130 @@
-
 import streamlit as st
 import pandas as pd
-import joblib
-import os
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-st.set_page_config(page_title="ML Model Comparison App", layout="wide")
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 
-st.title("Machine Learning Classification Models Comparison")
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
 
-st.write("Upload a CSV dataset to test trained models.")
+from sklearn.metrics import (
+    accuracy_score, roc_auc_score, precision_score,
+    recall_score, f1_score, matthews_corrcoef,
+    confusion_matrix, classification_report
+)
 
-uploaded_file = st.file_uploader("Upload CSV", type=["csv"])
+st.set_page_config(page_title="ML Classification App", layout="wide")
+
+st.title("Machine Learning Classification Models App")
+
+st.write("Upload CSV dataset (Last column should be target variable)")
+
+uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
 
 if uploaded_file is not None:
 
     df = pd.read_csv(uploaded_file)
 
-    st.write("Dataset Preview")
+    st.subheader("Dataset Preview")
     st.dataframe(df.head())
 
+    # Split features and target
     X = df.iloc[:, :-1]
+    y = df.iloc[:, -1]
 
     # Convert categorical
     X = pd.get_dummies(X, drop_first=True)
 
-    model_path = "model"
+    if y.dtype == 'object':
+        y = LabelEncoder().fit_transform(y)
 
-    if os.path.exists(model_path):
+    # Train Test Split
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
 
-        results = {}
+    # Model Selection
+    model_name = st.selectbox(
+        "Select Model",
+        [
+            "Logistic Regression",
+            "Decision Tree",
+            "KNN",
+            "Naive Bayes",
+            "Random Forest",
+            "XGBoost"
+        ]
+    )
 
-        for file in os.listdir(model_path):
+    if model_name == "Logistic Regression":
+        model = LogisticRegression(max_iter=1000)
 
-            if file.endswith(".pkl"):
+    elif model_name == "Decision Tree":
+        model = DecisionTreeClassifier()
 
-                model_name = file.replace(".pkl", "")
+    elif model_name == "KNN":
+        model = KNeighborsClassifier()
 
-                model = joblib.load(os.path.join(model_path, file))
+    elif model_name == "Naive Bayes":
+        model = GaussianNB()
 
-                try:
-                    preds = model.predict(X)
-                    results[model_name] = preds[:10]
-                except:
-                    results[model_name] = "Prediction Error"
+    elif model_name == "Random Forest":
+        model = RandomForestClassifier()
 
-        st.subheader("Model Predictions (First 10 Rows)")
-        st.write(results)
+    elif model_name == "XGBoost":
+        model = XGBClassifier(eval_metric='logloss')
 
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
+    if hasattr(model, "predict_proba"):
+        y_prob = model.predict_proba(X_test)[:, 1]
     else:
-        st.error("Model folder not found. Upload trained models.")
+        y_prob = y_pred
+
+    # Metrics
+    accuracy = accuracy_score(y_test, y_pred)
+    auc = roc_auc_score(y_test, y_prob)
+    precision = precision_score(y_test, y_pred, average='weighted')
+    recall = recall_score(y_test, y_pred, average='weighted')
+    f1 = f1_score(y_test, y_pred, average='weighted')
+    mcc = matthews_corrcoef(y_test, y_pred)
+
+    st.subheader("Evaluation Metrics")
+
+    st.write({
+        "Accuracy": accuracy,
+        "AUC": auc,
+        "Precision": precision,
+        "Recall": recall,
+        "F1 Score": f1,
+        "MCC": mcc
+    })
+
+    # Confusion Matrix
+    st.subheader("Confusion Matrix")
+
+    cm = confusion_matrix(y_test, y_pred)
+
+    fig, ax = plt.subplots()
+    sns.heatmap(cm, annot=True, fmt='d', cmap="Blues", ax=ax)
+
+    st.pyplot(fig)
+
+    # Classification Report
+    st.subheader("Classification Report")
+
+    report = classification_report(y_test, y_pred)
+
+    st.text(report)
+
+else:
+    st.info("Please upload dataset to start.")
