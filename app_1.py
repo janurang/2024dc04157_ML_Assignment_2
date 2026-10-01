@@ -117,7 +117,7 @@ st.subheader("Confusion Matrix")
 cm = confusion_matrix(y_test, y_pred)
 
 # Create a small figure
-fig, ax = plt.subplots(figsize=(4, 3))
+fig, ax = plt.subplots(figsize=(4, 2))
 
 # Plot confusion matrix
 sns.heatmap(
