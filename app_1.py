@@ -109,10 +109,7 @@ if uploaded_file is not None:
         "MCC": mcc
     })
 
-   ```python
-# ---------------------------------------------------------
 # Confusion Matrix
-# ---------------------------------------------------------
 
 st.subheader("Confusion Matrix")
 
