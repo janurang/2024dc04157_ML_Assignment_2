@@ -158,12 +158,10 @@ st.pyplot(
 # Close the figure
 plt.close(fig)
 
-    # Classification Report
-    st.subheader("Classification Report")
+# Classification Report
+st.subheader("Classification Report")
+report = classification_report(y_test, y_pred)
 
-    report = classification_report(y_test, y_pred)
-
-    st.text(report)
-
+st.text(report)
 else:
-    st.info("Please upload dataset to start.")
+st.info("Please upload dataset to start.")
