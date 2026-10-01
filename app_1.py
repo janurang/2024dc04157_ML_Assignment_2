@@ -109,18 +109,57 @@ if uploaded_file is not None:
         "MCC": mcc
     })
 
-    # Confusion Matrix
-    st.subheader("Confusion Matrix")
+   ```python
+# ---------------------------------------------------------
+# Confusion Matrix
+# ---------------------------------------------------------
 
-    cm = confusion_matrix(y_test, y_pred)
+st.subheader("Confusion Matrix")
 
-    #fig, ax = plt.subplots()
+# Calculate confusion matrix
+cm = confusion_matrix(y_test, y_pred)
 
-# Create SMALL figure fig, ax = plt.subplots( figsize=(4, 3) )
+# Create a small figure
+fig, ax = plt.subplots(figsize=(4, 3))
 
-    sns.heatmap(cm, annot=True, fmt='d', cmap="Blues", ax=ax)
+# Plot confusion matrix
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt="d",
+    cmap="Blues",
+    cbar=False,
+    ax=ax,
+    annot_kws={"size": 12, "weight": "bold"}
+)
 
-    st.pyplot(fig)
+# Axis labels
+ax.set_xlabel("Predicted Label", fontsize=10)
+ax.set_ylabel("Actual Label", fontsize=10)
+
+# Title
+ax.set_title(
+    f"{model_name} - Confusion Matrix",
+    fontsize=11
+)
+
+# Smaller tick labels
+ax.tick_params(
+    axis="both",
+    labelsize=9
+)
+
+# Prevent excessive margins
+plt.tight_layout()
+
+# Display figure without stretching
+st.pyplot(
+    fig,
+    use_container_width=False
+)
+
+# Close the figure
+plt.close(fig)
 
     # Classification Report
     st.subheader("Classification Report")
