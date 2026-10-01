@@ -163,5 +163,5 @@ st.subheader("Classification Report")
 report = classification_report(y_test, y_pred)
 
 st.text(report)
-else:
-st.info("Please upload dataset to start.")
+#else:
+#st.info("Please upload dataset to start.")
